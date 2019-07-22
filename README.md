@@ -1,23 +1,23 @@
 # Backend challenge
 
-Welcome to Bankin's backend challenge.
+Welcome to Bankin's Java backend challenge.
 
-You will be adding to the existing code of this project, which has already be cloned and imported into IntelliJ for you.
+You will be adding to the existing code of this project. Setting up the project requires Java 8 and IntelliJ CE (https://www.jetbrains.com/idea/download) with the Scala plugin installed.
 
 ## Running the project
 
-The project builds and runs in its initial state. You can run it by clicking on the "start" button in the upper-right section of the screen.
+The project builds and runs in its initial state. You can start it by either typing `./sbt run` in the console or by creating an SBT run configuration in IntelliJ with the `run` task.
 
-Calling the health check endpoint `curl localhost:9000/ping` should then return `HTTP 200`.
+Once started, calling the health check endpoint `curl localhost:9000/ping` should return `HTTP 200`.
 
-Running tests can be done by running `./sbt test` in the console, or by double clicking the `test` package and choosing `Run all tests`.
+The command `./sbt test` will run the unit tests.
 
 ## The challenge
 
-The BridgeClient service should be used to call the `List accounts` endpoint (see.: https://docs.bridgeapi.io/v2018-06-15/reference#list-accounts) and compute the sum of all of the User's account, rounded to the upper thousand.
+Upon completing the challenge, the endpoint `/mycontroller/myroute` is supposed to return the sum of a user's checking and saving accounts, rounded to the upper hundred.
 
-The computed value should then be returned by `MyController` (hopefully its name will have changed by then).
+The user's credentials as well as its authentication call are already coded in the `BridgeClient` service. 
 
-A few unit tests would be welcome.
+Your task consists in implementing the `List account` (https://docs.bridgeapi.io/v2018.06.15/reference#list-accounts) endpoint as well as the appropriate business logic.
 
-The API and User credentials have already been pre-filled in the service. The User authentication is also already coded.
+A few unit tests and renaming would be welcome.
