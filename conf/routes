@@ -1,3 +1,3 @@
 GET     /ping                       controllers.Ping.ping
 
-GET     /mycontroller/myroute       controllers.MyController.myMethod
+GET     /user/balance               controllers.UserController.getCheckingAndSavingAccountsSum

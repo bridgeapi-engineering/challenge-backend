@@ -3,19 +3,17 @@ package services;
 import com.typesafe.config.Config;
 import models.AuthenticateResponse;
 import models.GetAccountsResponse;
+import org.springframework.util.CollectionUtils;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 
 import javax.inject.Inject;
-
 import java.util.Optional;
 
 import static play.mvc.Http.Status.OK;
 
 /**
  * Bridge is Bankin's SaaS API. This service is where the calls to the API should be implemented.
- *
- * The "doSomething" method doesn't actually do anything yet and needs to be modified to fit the exercice's needs.
  */
 public class BridgeClient {
 
@@ -60,22 +58,37 @@ public class BridgeClient {
                 .join();
     }
 
-    public double doSomething() {
+    /**
+     * Returns the sum of a user's checking and saving accounts, rounded to the upper hundred
+     * @return amount rounded to the upper hundred
+     */
+    public double getCheckingAndSavingAccountsSum() {
         Optional<AuthenticateResponse> maybeAccessToken = authenticateUser(USER_EMAIL, USER_PASSWORD);
 
-        wsClient.url(baseUrl + "")
-                .addHeader("Bankin-Version", apiVersion)
-                .addHeader("Authorization", "Bearer ")
-                .addQueryParameter("myparam", "myvalue")
-                .get()
-                .thenApply(response -> {
-                    GetAccountsResponse getAccountsResponse = Json.fromJson(response.asJson(), GetAccountsResponse.class);
+        if (maybeAccessToken.isPresent()) {
+            return wsClient.url(baseUrl + "/accounts")
+                    .addHeader("Bankin-Version", apiVersion)
+                    .addHeader("Authorization", "Bearer " + maybeAccessToken.get().accessToken)
+                    .addQueryParameter("limit", String.valueOf(10))
+                    .addQueryParameter("client_id", apiClientId)
+                    .addQueryParameter("client_secret", apiClientSecret)
+                    .get()
+                    .thenApply(response -> {
+                        Optional<GetAccountsResponse> getAccountsResponse = Optional.ofNullable(Json.fromJson(response.asJson(), GetAccountsResponse.class));
+                        if (getAccountsResponse.isPresent() && response.getStatus() == OK) {
+                            if (!CollectionUtils.isEmpty(getAccountsResponse.get().accounts)) {
+                                return getAccountsResponse.get().accounts.stream()
+                                        .filter(account -> account != null&& account.balance != null)
+                                        .mapToDouble(account -> account.balance)
+                                        .sum();
+                            }
+                        }
+                        throw new RuntimeException("Cannot retrieve balances from supplied response");
+                    })
+                    .toCompletableFuture()
+                    .join();
+        }
 
-                    return 0d;
-                })
-                .toCompletableFuture()
-                .join();
-
-        return 0d;
+        throw new RuntimeException("Cannot retrieve access token");
     }
 }
